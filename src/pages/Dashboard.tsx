@@ -15,6 +15,9 @@ import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
 import DashboardNavbar from '@/components/DashboardNavbar';
 import TypewriterText from '@/components/dashboard/TypewriterText';
 import { supabase } from '@/integrations/supabase/client';
+import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 
 interface DashboardStats {
   resumesCount: number;
@@ -52,17 +55,33 @@ const featureCards = [
 ];
 
 const Dashboard = () => {
-  const { userProfile, isLoading } = useUser();
+  const { userProfile, isLoading, setUserProfile } = useUser();
   const navigate = useNavigate();
   const [stats, setStats] = useState<DashboardStats>({
     resumesCount: 0,
   });
+  const [showNamePrompt, setShowNamePrompt] = useState(false);
+  const [userName, setUserName] = useState('');
 
+  // Check if user profile exists, if not show name prompt
   useEffect(() => {
     if (!isLoading && !userProfile) {
-      navigate('/');
+      // Check if name exists in localStorage
+      const savedName = localStorage.getItem('user_name');
+      if (savedName) {
+        // Create profile with saved name
+        const demoProfile = {
+          id: 'demo-user-' + Date.now(),
+          name: savedName,
+          created_at: new Date().toISOString()
+        };
+        setUserProfile(demoProfile);
+      } else {
+        // Show name prompt
+        setShowNamePrompt(true);
+      }
     }
-  }, [userProfile, isLoading, navigate]);
+  }, [userProfile, isLoading, setUserProfile]);
 
   useEffect(() => {
     if (userProfile) {
@@ -87,6 +106,22 @@ const Dashboard = () => {
     }
   };
 
+  const handleNameSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (userName.trim()) {
+      // Save name to localStorage
+      localStorage.setItem('user_name', userName.trim());
+      // Create user profile
+      const newProfile = {
+        id: 'demo-user-' + Date.now(),
+        name: userName.trim(),
+        created_at: new Date().toISOString()
+      };
+      setUserProfile(newProfile);
+      setShowNamePrompt(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -107,6 +142,48 @@ const Dashboard = () => {
         <title>Dashboard - Career Agent</title>
         <meta name="description" content="Your personalized career dashboard" />
       </Helmet>
+
+      {/* Name Prompt Modal */}
+      {showNamePrompt && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="w-full max-w-md mx-4"
+          >
+            <Card className="p-8 shadow-2xl">
+              <div className="text-center mb-6">
+                <div className="w-16 h-16 rounded-full gradient-bg flex items-center justify-center mx-auto mb-4">
+                  <Bot className="w-8 h-8 text-white" />
+                </div>
+                <h2 className="text-2xl font-bold mb-2">
+                  Welcome to Career <span className="text-primary/80 font-extrabold">Agent</span>!
+                </h2>
+                <p className="text-muted-foreground">Let's get started with your name</p>
+              </div>
+              
+              <form onSubmit={handleNameSubmit} className="space-y-4">
+                <Input
+                  type="text"
+                  value={userName}
+                  onChange={(e) => setUserName(e.target.value)}
+                  placeholder="Enter your name"
+                  className="text-lg"
+                  autoFocus
+                  required
+                />
+                <Button 
+                  type="submit"
+                  className="w-full gradient-bg text-white text-lg py-6"
+                  disabled={!userName.trim()}
+                >
+                  Get Started
+                </Button>
+              </form>
+            </Card>
+          </motion.div>
+        </div>
+      )}
 
       <div className="min-h-screen bg-background">
         <DashboardNavbar />

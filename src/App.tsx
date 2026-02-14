@@ -11,6 +11,7 @@ import ResumeScreening from "./pages/ResumeScreening";
 import ResumeBuilder from "./pages/ResumeBuilder";
 import ResourceChat from "./pages/ResourceChat";
 import SkillGap from "./pages/SkillGap";
+import Roadmap30Day from "./pages/Roadmap30Day";
 import JobMatching from "./pages/JobMatching";
 import Dashboard from "./pages/Dashboard";
 import ResumesCreated from "./pages/dashboard/ResumesCreated";
@@ -35,6 +36,7 @@ const App = () => (
               <Route path="/resume-builder" element={<ResumeBuilder />} />
               <Route path="/resources" element={<ResourceChat />} />
               <Route path="/skill-gap" element={<SkillGap />} />
+              <Route path="/roadmap-30-day" element={<Roadmap30Day />} />
               <Route path="/jobs" element={<JobMatching />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/dashboard/resumes/created" element={<ResumesCreated />} />

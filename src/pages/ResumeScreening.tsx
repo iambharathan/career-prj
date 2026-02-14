@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import DashboardNavbar from '@/components/DashboardNavbar';
 import { useUser } from '@/contexts/UserContext';
 import { getOpenAIKey } from '@/config/apiKeys';
@@ -84,12 +84,7 @@ const ResumeScreening = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const { userProfile, openAIKey } = useUser();
-
-  // Skill Gap Analysis states
-  const [showSkillGap, setShowSkillGap] = useState(false);
-  const [targetRole, setTargetRole] = useState('');
-  const [isAnalyzingSkillGap, setIsAnalyzingSkillGap] = useState(false);
-  const [skillGapAnalysis, setSkillGapAnalysis] = useState<SkillGapAnalysis | null>(null);
+  const navigate = useNavigate();
 
   const [isParsing, setIsParsing] = useState(false);
 
@@ -213,7 +208,6 @@ const ResumeScreening = () => {
 
       if (analysisResult) {
         setAnalysis(analysisResult);
-        setShowSkillGap(true);
         toast({
           title: 'Analysis complete!',
           description: 'Your resume has been analyzed. You can now run a skill gap analysis.',
@@ -232,15 +226,6 @@ const ResumeScreening = () => {
   };
 
   const analyzeSkillGap = async () => {
-    if (!targetRole.trim()) {
-      toast({
-        title: 'Target role required',
-        description: 'Please enter your target role to analyze skill gaps.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
     const currentSkills = analysis?.extractedSkills || analysis?.keywords?.found || [];
     
     if (currentSkills.length === 0) {
@@ -252,31 +237,12 @@ const ResumeScreening = () => {
       return;
     }
 
-    // Use provided API key or default fallback
-    const apiKey = getOpenAIKey(openAIKey);
-
-    setIsAnalyzingSkillGap(true);
-    try {
-      // Call OpenAI directly instead of Supabase Edge Function
-      const analysisResult = await analyzeSkillGapWithOpenAI(currentSkills, targetRole, apiKey);
-
-      if (analysisResult) {
-        setSkillGapAnalysis(analysisResult);
-        toast({
-          title: 'Skill gap analysis complete!',
-          description: 'Check out your personalized learning roadmap below.',
-        });
-      }
-    } catch (error) {
-      console.error('Skill gap analysis error:', error);
-      toast({
-        title: 'Analysis failed',
-        description: 'Failed to analyze skill gaps. Please check your OpenAI API key and try again.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsAnalyzingSkillGap(false);
-    }
+    // Navigate to skill gap page with skills
+    navigate('/skill-gap', { 
+      state: { 
+        prefilledSkills: currentSkills.join(', ')
+      } 
+    });
   };
 
   const getScoreColor = (score: number) => {
@@ -476,177 +442,25 @@ const ResumeScreening = () => {
                   </Card>
                 )}
 
-                {/* Skill Gap Analysis Section */}
-                {showSkillGap && !skillGapAnalysis && (
+                {/* Navigate to Skill Gap Page */}
+                {analysis && (
                   <Card className="glass-card p-6 md:p-8 border-2 border-secondary/30">
                     <h3 className="text-xl font-bold text-primary mb-2 flex items-center gap-2">
                       <Target className="w-5 h-5 text-secondary" />
-                      Skill Gap Analysis
+                      Ready for Skill Gap Analysis?
                     </h3>
                     <p className="text-muted-foreground mb-4">
-                      Based on your extracted skills, let's identify gaps for your target role.
+                      We've extracted {analysis.extractedSkills?.length || analysis.keywords?.found?.length || 0} skills from your resume. 
+                      Click below to analyze skill gaps for your target role.
                     </p>
-                    <div className="flex flex-col sm:flex-row gap-3">
-                      <Input
-                        value={targetRole}
-                        onChange={(e) => setTargetRole(e.target.value)}
-                        placeholder="Enter your target role (e.g., Senior Software Engineer)"
-                        className="flex-1"
-                      />
-                      <Button
-                        onClick={analyzeSkillGap}
-                        disabled={isAnalyzingSkillGap || !targetRole.trim()}
-                        className="btn-primary whitespace-nowrap"
-                      >
-                        {isAnalyzingSkillGap ? (
-                          <>
-                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                            Analyzing...
-                          </>
-                        ) : (
-                          <>
-                            Analyze Skill Gap
-                            <ChevronRight className="w-4 h-4 ml-1" />
-                          </>
-                        )}
-                      </Button>
-                    </div>
+                    <Button
+                      onClick={analyzeSkillGap}
+                      className="btn-primary"
+                    >
+                      Go to Skill Gap Analysis
+                      <ChevronRight className="w-4 h-4 ml-1" />
+                    </Button>
                   </Card>
-                )}
-
-                {/* Skill Gap Analysis Results */}
-                {skillGapAnalysis && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="space-y-6"
-                  >
-                    {/* Target Role Overview */}
-                    <Card className="glass-card p-6 md:p-8 border-2 border-secondary/30">
-                      <h3 className="text-xl font-bold text-primary mb-4">
-                        Target Role: {skillGapAnalysis.targetRoleAnalysis?.title || targetRole}
-                      </h3>
-                      <div className="grid md:grid-cols-3 gap-4 mb-4">
-                        <div className="text-center p-4 bg-muted/50 rounded-lg">
-                          <p className="text-sm text-muted-foreground">Overall Readiness</p>
-                          <p className={`text-3xl font-bold ${getScoreColor(skillGapAnalysis.overallReadiness)}`}>
-                            {skillGapAnalysis.overallReadiness}%
-                          </p>
-                        </div>
-                        <div className="text-center p-4 bg-muted/50 rounded-lg">
-                          <p className="text-sm text-muted-foreground">Time to Ready</p>
-                          <p className="text-xl font-semibold text-foreground">
-                            {skillGapAnalysis.estimatedTimeToReady}
-                          </p>
-                        </div>
-                        <div className="text-center p-4 bg-muted/50 rounded-lg">
-                          <p className="text-sm text-muted-foreground">Demand Level</p>
-                          <Badge variant={skillGapAnalysis.targetRoleAnalysis?.demandLevel === 'High' ? 'default' : 'secondary'}>
-                            {skillGapAnalysis.targetRoleAnalysis?.demandLevel || 'Medium'}
-                          </Badge>
-                        </div>
-                      </div>
-                      <p className="text-muted-foreground">{skillGapAnalysis.targetRoleAnalysis?.description}</p>
-                    </Card>
-
-                    {/* Skill Comparison */}
-                    {skillGapAnalysis.skillComparison && skillGapAnalysis.skillComparison.length > 0 && (
-                      <Card className="glass-card p-6 md:p-8">
-                        <h3 className="text-xl font-bold text-primary mb-6">Skill Comparison</h3>
-                        <div className="space-y-4">
-                          {skillGapAnalysis.skillComparison.map((skill, index) => (
-                            <div key={index} className="border border-border rounded-lg p-4">
-                              <div className="flex items-center justify-between mb-2">
-                                <div className="flex items-center gap-2">
-                                  <span className="font-medium text-foreground">{skill.skill}</span>
-                                  <Badge variant="outline" className="text-xs">{skill.category}</Badge>
-                                </div>
-                                <Badge className={getPriorityColor(skill.priority)}>{skill.priority}</Badge>
-                              </div>
-                              <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                  <p className="text-xs text-muted-foreground mb-1">Current Level</p>
-                                  <Progress value={skill.currentLevel} className="h-2" />
-                                  <span className="text-xs text-muted-foreground">{skill.currentLevel}%</span>
-                                </div>
-                                <div>
-                                  <p className="text-xs text-muted-foreground mb-1">Required Level</p>
-                                  <Progress value={skill.requiredLevel} className="h-2" />
-                                  <span className="text-xs text-muted-foreground">{skill.requiredLevel}%</span>
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </Card>
-                    )}
-
-                    {/* Missing Skills */}
-                    {skillGapAnalysis.missingSkills && skillGapAnalysis.missingSkills.length > 0 && (
-                      <Card className="glass-card p-6 md:p-8">
-                        <h3 className="text-xl font-bold text-primary mb-6">Skills to Learn</h3>
-                        <div className="grid md:grid-cols-2 gap-4">
-                          {skillGapAnalysis.missingSkills.map((skill, index) => (
-                            <div key={index} className="border border-border rounded-lg p-4">
-                              <div className="flex items-center justify-between mb-2">
-                                <span className="font-medium text-foreground">{skill.skill}</span>
-                                <Badge className={getPriorityColor(skill.importance)}>{skill.importance}</Badge>
-                              </div>
-                              <p className="text-sm text-muted-foreground mb-2">
-                                Time to learn: {skill.timeToLearn}
-                              </p>
-                              {skill.learningResources && skill.learningResources.length > 0 && (
-                                <div>
-                                  <p className="text-xs text-muted-foreground mb-1">Resources:</p>
-                                  <ul className="text-sm text-muted-foreground list-disc list-inside">
-                                    {skill.learningResources.slice(0, 2).map((resource, i) => (
-                                      <li key={i}>{resource}</li>
-                                    ))}
-                                  </ul>
-                                </div>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      </Card>
-                    )}
-
-                    {/* Learning Roadmap */}
-                    {skillGapAnalysis.learningRoadmap && (
-                      <Card className="glass-card p-6 md:p-8">
-                        <h3 className="text-xl font-bold text-primary mb-6">Your Learning Roadmap</h3>
-                        <div className="space-y-4">
-                          {['phase1', 'phase2', 'phase3'].map((phaseKey, index) => {
-                            const phase = skillGapAnalysis.learningRoadmap[phaseKey as keyof typeof skillGapAnalysis.learningRoadmap];
-                            if (!phase) return null;
-                            return (
-                              <div key={phaseKey} className="border-l-4 border-secondary pl-4">
-                                <div className="flex items-center gap-2 mb-2">
-                                  <span className="w-6 h-6 rounded-full bg-secondary text-secondary-foreground text-sm flex items-center justify-center font-medium">
-                                    {index + 1}
-                                  </span>
-                                  <h4 className="font-semibold text-foreground">{phase.title}</h4>
-                                  <Badge variant="outline">{phase.duration}</Badge>
-                                </div>
-                                <div className="ml-8">
-                                  <p className="text-sm text-muted-foreground mb-2">
-                                    Focus: {phase.focus?.join(', ')}
-                                  </p>
-                                  {phase.milestones && phase.milestones.length > 0 && (
-                                    <ul className="text-sm text-muted-foreground list-disc list-inside">
-                                      {phase.milestones.map((milestone, i) => (
-                                        <li key={i}>{milestone}</li>
-                                      ))}
-                                    </ul>
-                                  )}
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </Card>
-                    )}
-                  </motion.div>
                 )}
 
                 {/* Section Analysis */}
@@ -788,9 +602,6 @@ const ResumeScreening = () => {
                     setAnalysis(null);
                     setResumeText('');
                     setUploadedFileName(null);
-                    setShowSkillGap(false);
-                    setSkillGapAnalysis(null);
-                    setTargetRole('');
                   }}
                   variant="outline"
                   className="w-full"

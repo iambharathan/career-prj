@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Target, Loader2, Plus, TrendingUp, Clock, BookOpen, CheckCircle2 } from 'lucide-react';
@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import DashboardNavbar from '@/components/DashboardNavbar';
 import { useUser } from '@/contexts/UserContext';
 import { getOpenAIKey } from '@/config/apiKeys';
@@ -77,6 +77,28 @@ const SkillGap = () => {
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
   const { toast } = useToast();
   const { userProfile, openAIKey } = useUser();
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // Handle prefilled skills from resume screening
+  useEffect(() => {
+    if (location.state?.prefilledSkills) {
+      const prefilledSkillsString = location.state.prefilledSkills as string;
+      const skillsArray = prefilledSkillsString
+        .split(',')
+        .map(skill => skill.trim())
+        .filter(skill => skill.length > 0);
+      
+      // Remove duplicates and set skills
+      const uniqueSkills = Array.from(new Set(skillsArray));
+      setSkills(uniqueSkills);
+      
+      toast({
+        title: 'Skills imported from resume!',
+        description: `${uniqueSkills.length} skills have been added. You can add more or remove any.`,
+      });
+    }
+  }, [location.state, toast]);
 
   const addSkill = () => {
     if (skillInput.trim() && !skills.includes(skillInput.trim())) {
@@ -224,8 +246,8 @@ const SkillGap = () => {
             animate={{ opacity: 1, y: 0 }}
             className="max-w-5xl mx-auto"
           >
-            <h1 className="text-3xl md:text-4xl font-bold text-primary mb-2">Skill Gap Detection</h1>
-            <p className="text-muted-foreground mb-8">Identify gaps between your skills and target role requirements</p>
+            <h1 className="text-3xl md:text-4xl font-bold text-primary mb-2">30-Day Career Roadmap Builder</h1>
+            <p className="text-muted-foreground mb-8">AI-powered analysis of your skills vs dream role + personalized 30-day learning path</p>
 
             {!analysis ? (
               <Card className="glass-card p-6 md:p-8">
@@ -233,16 +255,16 @@ const SkillGap = () => {
                   {/* GitHub Username */}
                   <div>
                     <label className="block text-sm font-medium text-foreground mb-2">
-                      GitHub Username (Optional - Auto-extract skills)
+                      📊 GitHub Profile (Optional - Auto-analyze your repos)
                     </label>
                     <Input
                       value={githubUsername}
                       onChange={(e) => setGithubUsername(e.target.value)}
-                      placeholder="e.g., torvalds"
+                      placeholder="e.g., octocat"
                       disabled={isAnalyzing}
                     />
                     <p className="text-xs text-muted-foreground mt-1">
-                      We'll analyze your repositories to extract technical skills automatically
+                      Our AI agents will scan your repositories to discover your real-world technical skills
                     </p>
                   </div>
 
@@ -336,17 +358,17 @@ const SkillGap = () => {
                   <Button
                     onClick={analyzeGap}
                     disabled={isAnalyzing || (skills.length === 0 && !githubUsername) || !targetRole.trim()}
-                    className="w-full btn-primary"
+                    className="w-full btn-primary text-lg py-6"
                   >
                     {isAnalyzing ? (
                       <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Multi-Agent Analysis Running...
+                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                        Generating Your 30-Day Roadmap...
                       </>
                     ) : (
                       <>
-                        <Target className="w-4 h-4 mr-2" />
-                        🤖 Start Agentic Analysis
+                        <TrendingUp className="w-5 h-5 mr-2" />
+                        🎯 Generate My 30-Day "Vibe-Check" Roadmap
                       </>
                     )}
                   </Button>
@@ -566,12 +588,21 @@ const SkillGap = () => {
                   >
                     Start New Analysis
                   </Button>
-                  <Link to="/resources" className="flex-1">
-                    <Button className="w-full btn-primary">
-                      <BookOpen className="w-4 h-4 mr-2" />
-                      Find Learning Resources
-                    </Button>
-                  </Link>
+                  <Button 
+                    onClick={() => {
+                      navigate('/roadmap-30-day', {
+                        state: {
+                          skillGapData: analysis,
+                          targetRole: targetRole,
+                          skills: skills
+                        }
+                      });
+                    }}
+                    className="flex-1 btn-primary"
+                  >
+                    <Target className="w-4 h-4 mr-2" />
+                    Build My 30-Day Roadmap
+                  </Button>
                 </div>
               </motion.div>
             )}

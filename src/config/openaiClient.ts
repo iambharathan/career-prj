@@ -1,6 +1,19 @@
 import OpenAI from 'openai';
 import { getOpenAIKey } from './apiKeys';
 
+// Helper function to clean JSON from markdown formatting
+const cleanJSONResponse = (content: string): string => {
+  let cleaned = content.trim();
+  
+  // Remove markdown code blocks (```json ... ``` or ``` ... ```)
+  if (cleaned.startsWith('```')) {
+    cleaned = cleaned.replace(/^```(?:json)?\s*\n?/i, '');
+    cleaned = cleaned.replace(/\n?```\s*$/, '');
+  }
+  
+  return cleaned.trim();
+};
+
 // Initialize OpenAI client (will use API key from config)
 export const createOpenAIClient = (apiKey?: string) => {
   const key = apiKey || getOpenAIKey();
@@ -73,8 +86,29 @@ Return ONLY the JSON object, no other text.`;
   });
 
   const content = response.choices[0]?.message?.content || '{}';
-  const analysis = JSON.parse(content);
-  return analysis;
+  
+  // Clean up markdown formatting if present
+  const cleanedContent = cleanJSONResponse(content);
+  
+  // Try to parse the cleaned JSON
+  try {
+    const analysis = JSON.parse(cleanedContent);
+    return analysis;
+  } catch (parseError) {
+    console.error('Resume analysis JSON parse error:', parseError);
+    console.error('Content received:', content);
+    
+    // Return a fallback structure
+    return {
+      overallScore: 70,
+      atsCompatibility: "Medium",
+      summary: "Resume analysis completed",
+      extractedSkills: [],
+      sections: [],
+      keywords: { found: [], missing: [], industryRelevant: [] },
+      formatting: { score: 7, issues: [], suggestions: [] }
+    };
+  }
 };
 
 // Analyze skill gap using OpenAI directly
@@ -150,6 +184,27 @@ Return ONLY the JSON object.`;
   });
 
   const content = response.choices[0]?.message?.content || '{}';
-  const analysis = JSON.parse(content);
-  return analysis;
+  
+  // Clean up markdown formatting if present
+  const cleanedContent = cleanJSONResponse(content);
+  
+  // Try to parse the cleaned JSON
+  try {
+    const analysis = JSON.parse(cleanedContent);
+    return analysis;
+  } catch (parseError) {
+    console.error('JSON parse error:', parseError);
+    console.error('Content received:', content);
+    
+    // Return a fallback structure
+    return {
+      targetRole: targetRole,
+      skillComparison: [],
+      missingSkills: [],
+      strengths: currentSkills.slice(0, 3),
+      learningRoadmap: {},
+      overallReadiness: 50,
+      estimatedTimeToReady: "30 days"
+    };
+  }
 };

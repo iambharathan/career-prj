@@ -39,6 +39,8 @@ interface Roadmap {
     description: string;
     skills: string[];
     weekStart: number;
+    estimatedHours?: number;
+    deliverables?: string[];
   }[];
   checkpoints: {
     day: number;
@@ -102,80 +104,104 @@ const Roadmap30Day = () => {
       
       const apiKey = getOpenAIKey(openAIKey);
       
-      const prompt = `You are an expert career coach. Create a detailed, actionable 30-day learning roadmap.
+      const prompt = `You are an expert career coach creating a realistic 30-day roadmap to learn ONLY the missing skills.
 
-**Context:**
-- Current Skills: ${skills.join(', ')}
-- Target Role: ${targetRole}
-- Missing/Weak Skills: ${allGapSkills.join(', ')}
+**CRITICAL CONTEXT:**
+Target Role: ${targetRole}
+Current Skills (ALREADY KNOWS): ${skills.join(', ')}
+Missing Skills (MUST LEARN): ${allGapSkills.join(', ')}
 
-**Requirements:**
-Create a JSON roadmap that:
-1. Focuses on learning the missing skills: ${allGapSkills.join(', ')}
-2. Provides specific, real resources (courses, docs, tutorials)
-3. Orders skills logically (fundamentals → intermediate → advanced)
-4. Includes 3 hands-on projects to practice skills
-5. Has realistic daily time commitments (2-4 hours)
-6. Includes checkpoints every 7 days
+**YOUR MISSION:**
+Create a PRACTICAL 30-day roadmap to learn ONLY these missing skills: ${allGapSkills.join(', ')}
+
+**REALISM REQUIREMENTS:**
+1. ⏰ **Realistic Time:** Complex skills like Kubernetes need 5-7 days minimum, not 1 day
+2. 📚 **Learning Pace:** 2-4 hours daily study (people have jobs/life)
+3. 🎯 **One Skill at a Time:** Focus on 1-2 skills per week maximum
+4. 🔗 **Prerequisites:** Learn foundation skills before advanced ones
+5. 💡 **Practical:** 70% hands-on practice, 30% theory
+6. 🚀 **Achievable:** By day 30, learner should be job-interview ready in these missing skills
+
+**SKILL LEARNING TIME GUIDELINES:**
+- Basic tools (Git, Docker basics): 2-3 days
+- Cloud platforms (AWS, Azure): 5-7 days
+- Complex systems (Kubernetes, Terraform): 5-7 days
+- Programming languages: 7-10 days
+- Frameworks (React, Angular): 7-10 days
 
 **JSON Structure:**
 {
+  "title": "30-Day Roadmap to Learn Missing Skills for ${targetRole}",
   "targetRole": "${targetRole}",
-  "currentLevel": "Current level assessment",
-  "targetLevel": "Job-ready ${targetRole}",
-  "totalDuration": "30 days",
-  "missingSkillsPriority": ["List missing skills in learning order"],
+  "missingSkillsFocus": ${JSON.stringify(allGapSkills)},
+  "totalDuration": "30 days (2-4 hours/day)",
   "weeks": [
     {
       "week": 1,
-      "focus": "Specific focus area",
+      "focus": "First missing skill - foundation",
       "days": [
         {
           "day": 1,
-          "title": "Day title",
-          "description": "What to learn today",
-          "type": "learning|project|checkpoint",
+          "title": "Day 1: Introduction to [Skill]",
+          "description": "What to learn today (be specific)",
+          "type": "learning",
           "resources": [
-            "Official Documentation: [Specific URL or name]",
-            "Tutorial: [Specific course name]",
-            "Practice: [Specific platform]"
+            "[Skill] Official Documentation",
+            "[Specific course name - e.g., Kubernetes for Beginners]",
+            "[YouTube channel - e.g., TechWorld with Nana, freeCodeCamp]",
+            "[Platform tutorial - e.g., Interactive Kubernetes Tutorial]"
           ],
           "estimatedHours": 3,
-          "skillsCovered": ["Skill 1", "Skill 2"]
+          "skillsCovered": ["Skill"],
+          "practicalTask": "Hands-on exercise for today"
         }
       ]
     }
   ],
   "projects": [
     {
-      "title": "Project name",
-      "description": "What to build and why",
-      "skills": ["Skills practiced"],
+      "title": "Project 1: Beginner",
+      "description": "Build something with first 1-2 missing skills",
+      "skills": ["Skills from weeks 1-2"],
       "weekStart": 2,
-      "estimatedHours": 8,
-      "deliverables": ["What to produce"],
-      "resources": ["Where to learn how"]
+      "duration": "3-4 days",
+      "deliverables": ["What to build"],
+      "realWorldValue": "Why this matters for ${targetRole}"
     }
   ],
   "checkpoints": [
     {
       "day": 7,
-      "milestone": "What you should achieve",
-      "criteria": ["Measurable criteria"],
-      "assessment": "How to test yourself"
+      "milestone": "Completed [Skill] basics",
+      "skillsMastered": ["Skills learned so far"],
+      "assessment": "Can you do [specific task]?"
     }
   ]
 }
 
-**Important:**
-- Day 1-7: Focus on ${allGapSkills.slice(0, 2).join(' and ')} fundamentals
-- Day 8-14: Intermediate concepts and first project
-- Day 15-21: Advanced topics and second project
-- Day 22-30: Portfolio project and interview prep
-- Use REAL resources: freeCodeCamp, MDN, YouTube channels, Udemy, Coursera
-- Be specific: "Docker Official Docs - Getting Started" not just "Docker tutorial"
+**EXAMPLE REALISTIC BREAKDOWN (if Kubernetes is missing):**
+- Day 1-2: Docker fundamentals (prerequisite)
+- Day 3-4: Container orchestration concepts
+- Day 5-7: Kubernetes basics (pods, services, deployments)
+- Day 8-10: Kubernetes hands-on labs
+- Day 11-14: Build project deploying app to K8s
+(NOT "Day 1: Learn Kubernetes" - that's impossible!)
 
-Return ONLY the JSON, no markdown or explanation.`;
+**PRIORITIZATION:**
+1. Learn missing skills in dependency order (Docker before Kubernetes)
+2. Focus on most critical skills for ${targetRole} first
+3. Allocate more days to complex skills
+4. Include daily practical exercises
+5. Build 3 portfolio projects using the missing skills
+
+**RESOURCE REQUIREMENTS:**
+- Provide specific course/tutorial names (e.g., "Kubernetes for Beginners by Nana")
+- Include official documentation
+- Mention well-known platforms (Udemy, Coursera, freeCodeCamp, YouTube)
+- List practical hands-on labs and interactive tutorials
+- Do NOT add prefixes like "Reddit-recommended:" or "Top-rated:" - just provide the resource name directly
+
+Return ONLY valid JSON, no markdown formatting.`;
 
       const response = await analyzeSkillGapWithOpenAI(skills, targetRole, apiKey);
       
@@ -212,163 +238,161 @@ Return ONLY the JSON, no markdown or explanation.`;
   const createIntelligentRoadmap = (role: string, currentSkills: string[], missingSkills: string[]): Roadmap => {
     const prioritizedSkills = missingSkills.length > 0 ? missingSkills.slice(0, 8) : ['System Design', 'Testing', 'CI/CD', 'Cloud Services'];
     
-    // Categorize skills
-    const fundamentals = prioritizedSkills.slice(0, 2);
-    const intermediate = prioritizedSkills.slice(2, 5);
-    const advanced = prioritizedSkills.slice(5, 8);
+    // Allocate realistic days per skill based on complexity
+    const getSkillDays = (skill: string): number => {
+      const complexSkills = ['kubernetes', 'terraform', 'aws', 'azure', 'react', 'angular', 'django'];
+      const mediumSkills = ['docker', 'jenkins', 'ansible', 'mongodb', 'postgresql'];
+      const lowerSkill = skill.toLowerCase();
+      
+      if (complexSkills.some(s => lowerSkill.includes(s))) return 7; // 1 week for complex
+      if (mediumSkills.some(s => lowerSkill.includes(s))) return 4; // 4 days for medium
+      return 3; // 3 days for basics
+    };
+    
+    // Build realistic daily schedule
+    const dailySchedule: Array<{
+      day: number;
+      skill: string;
+      phase: 'intro' | 'practice' | 'project' | 'checkpoint';
+    }> = [];
+    
+    let currentDay = 1;
+    prioritizedSkills.forEach((skill, index) => {
+      const days = getSkillDays(skill);
+      const introDays = Math.ceil(days * 0.4); // 40% intro
+      const practiceDays = Math.floor(days * 0.6); // 60% practice
+      
+      // Intro phase
+      for (let i = 0; i < introDays; i++) {
+        if (currentDay <= 30) {
+          dailySchedule.push({ day: currentDay++, skill, phase: 'intro' });
+        }
+      }
+      
+      // Practice phase
+      for (let i = 0; i < practiceDays; i++) {
+        if (currentDay <= 30) {
+          dailySchedule.push({ day: currentDay++, skill, phase: 'practice' });
+        }
+      }
+      
+      // Add checkpoint every 7 days
+      if (currentDay % 7 === 0 && currentDay <= 30) {
+        dailySchedule.push({ day: currentDay++, skill: 'Review', phase: 'checkpoint' });
+      }
+    });
+    
+    // Group into weeks
+    const weeks: WeekPlan[] = [];
+    for (let weekNum = 1; weekNum <= 4; weekNum++) {
+      const startDay = (weekNum - 1) * 7 + 1;
+      const endDay = Math.min(weekNum * 7, 30);
+      const weekDays = dailySchedule.filter(d => d.day >= startDay && d.day <= endDay);
+      
+      const mainSkill = weekDays[0]?.skill || 'Skills';
+      
+      weeks.push({
+        week: weekNum,
+        focus: `Master ${mainSkill} (Realistic Pace)`,
+        days: weekDays.map(({ day, skill, phase }) => ({
+          day,
+          title: phase === 'checkpoint' ? `Week ${weekNum} Checkpoint` :
+                 phase === 'intro' ? `${skill} - Day ${day - startDay + 1}: Fundamentals` :
+                 phase === 'project' ? `${skill} - Build Project` :
+                 `${skill} - Day ${day - startDay + 1}: Hands-on Practice`,
+          description: phase === 'checkpoint' ? `Review progress. Can you explain ${mainSkill}? Built something?` :
+                      phase === 'intro' ? `Learn ${skill} concepts, setup environment, follow official docs` :
+                      phase === 'project' ? `Build a real project using ${skill} to solidify learning` :
+                      `Practice ${skill} with exercises, tutorials, and mini-challenges`,
+          type: phase === 'checkpoint' ? 'checkpoint' : 
+                phase === 'project' ? 'project' : 'learning',
+          resources: phase === 'checkpoint' ? [
+            `Self-assessment: Skills learned so far`,
+            `Review projects and code`,
+            `Practice explaining concepts aloud`
+          ] : [
+            `${skill} Official Documentation`,
+            `${skill} for Beginners - Complete Course`,
+            `${skill} Tutorial by TechWorld with Nana`,
+            `${skill} Interactive Lab on Katacoda`,
+            phase === 'intro' ? `${skill} Best Practices Guide` : `Build Mini ${skill} Project`
+          ],
+          estimatedHours: phase === 'checkpoint' ? 2 : phase === 'project' ? 4 : 3
+        }))
+      });
+    }
     
     return {
       targetRole: role,
-      currentLevel: 'Intermediate Developer',
+      currentLevel: `Learning ${prioritizedSkills.length} Missing Skills`,
       targetLevel: `Job-Ready ${role}`,
-      totalDuration: '30 days',
-      weeks: [
-        {
-          week: 1,
-          focus: `${fundamentals.join(' & ')} Fundamentals`,
-          days: Array.from({ length: 7 }, (_, i) => ({
-            day: i + 1,
-            title: i === 0 ? `Getting Started with ${fundamentals[0]}` : 
-                   i === 6 ? 'Week 1 Checkpoint' : 
-                   `Day ${i + 1}: ${fundamentals[i % fundamentals.length] || fundamentals[0]} Deep Dive`,
-            description: i === 0 ? `Set up environment and learn ${fundamentals[0]} basics` : 
-                        i === 6 ? `Review Week 1: Master ${fundamentals.join(' and ')}` :
-                        `Practice ${fundamentals[i % fundamentals.length] || fundamentals[0]} with hands-on exercises`,
-            type: (i === 6 ? 'checkpoint' : i % 3 === 0 ? 'project' : 'learning') as 'learning' | 'project' | 'checkpoint',
-            resources: i === 0 ? [
-              `${fundamentals[0]} Official Documentation - Getting Started`,
-              `freeCodeCamp ${fundamentals[0]} Tutorial`,
-              `YouTube: ${fundamentals[0]} Crash Course`
-            ] : [
-              `${fundamentals[i % fundamentals.length] || fundamentals[0]} Interactive Tutorial`,
-              `Practice on LeetCode/HackerRank`,
-              `Real-world examples on GitHub`
-            ],
-            estimatedHours: i === 6 ? 2 : i % 3 === 0 ? 4 : 3
-          }))
-        },
-        {
-          week: 2,
-          focus: `${intermediate.join(' & ')} - Intermediate Level`,
-          days: Array.from({ length: 7 }, (_, i) => ({
-            day: i + 8,
-            title: i === 6 ? 'Week 2 Checkpoint' : `${intermediate[i % intermediate.length] || intermediate[0]} - Day ${i + 1}`,
-            description: i === 6 ? `Mid-point assessment: ${intermediate.join(', ')} proficiency` :
-                        `Master ${intermediate[i % intermediate.length] || intermediate[0]} concepts and best practices`,
-            type: (i === 6 ? 'checkpoint' : i % 2 === 0 ? 'project' : 'learning') as 'learning' | 'project' | 'checkpoint',
-            resources: [
-              `Udemy/Coursera: Advanced ${intermediate[i % intermediate.length] || intermediate[0]}`,
-              `Official ${intermediate[i % intermediate.length] || intermediate[0]} Documentation`,
-              `Build a mini-project using ${intermediate[i % intermediate.length] || intermediate[0]}`
-            ],
-            estimatedHours: i === 6 ? 2 : i % 2 === 0 ? 5 : 3
-          }))
-        },
-        {
-          week: 3,
-          focus: `${advanced.join(' & ')} + Portfolio Project`,
-          days: Array.from({ length: 7 }, (_, i) => ({
-            day: i + 15,
-            title: i === 6 ? 'Week 3 Checkpoint' : 
-                   i < 3 ? `Learn ${advanced[i] || advanced[0]}` :
-                   `Portfolio Project Day ${i - 2}`,
-            description: i === 6 ? 'Review progress and finalize portfolio project' :
-                        i < 3 ? `Deep dive into ${advanced[i] || advanced[0]}` :
-                        `Build your portfolio project using ${prioritizedSkills.slice(0, 4).join(', ')}`,
-            type: (i === 6 ? 'checkpoint' : i >= 3 ? 'project' : 'learning') as 'learning' | 'project' | 'checkpoint',
-            resources: i < 3 ? [
-              `${advanced[i] || advanced[0]} Official Guide`,
-              `YouTube: ${advanced[i] || advanced[0]} Tutorial Series`,
-              `Practice exercises`
-            ] : [
-              'GitHub Project Templates',
-              'Portfolio Best Practices',
-              'Code Review Checklist'
-            ],
-            estimatedHours: i >= 3 ? 5 : 3
-          }))
-        },
-        {
-          week: 4,
-          focus: 'Job Prep: Polish & Interview Ready',
-          days: Array.from({ length: 8 }, (_, i) => ({
-            day: i + 22,
-            title: i === 7 ? '🎉 Final Assessment' : 
-                   i % 2 === 0 ? `Portfolio Polish Day ${Math.floor(i/2) + 1}` :
-                   `Interview Prep: ${prioritizedSkills[i % prioritizedSkills.length]}`,
-            description: i === 7 ? 'Complete 30-day challenge! Review all skills and celebrate progress!' :
-                        i % 2 === 0 ? 'Refine your portfolio, add documentation, deploy projects' :
-                        `Practice interview questions for ${prioritizedSkills[i % prioritizedSkills.length]}`,
-            type: (i === 7 ? 'checkpoint' : 'project') as 'learning' | 'project' | 'checkpoint',
-            resources: i % 2 === 0 ? [
-              'Portfolio Hosting: Vercel/Netlify',
-              'README templates',
-              'LinkedIn profile optimization'
-            ] : [
-              `${role} Interview Questions`,
-              'LeetCode interview prep',
-              'Mock interview platforms'
-            ],
-            estimatedHours: i === 7 ? 4 : 3
-          }))
-        }
-      ],
+      totalDuration: '30 days (2-4 hours/day)',
+      weeks,
       projects: [
         {
-          title: `${fundamentals[0]} Mini Project`,
-          description: `Build a small project to practice ${fundamentals.join(' and ')}`,
-          skills: fundamentals,
-          weekStart: 1
+          title: `Beginner: ${prioritizedSkills[0] || 'First Skill'} Basics`,
+          description: `Build a simple project using ${prioritizedSkills[0] || 'first skill'} to practice fundamentals`,
+          skills: [prioritizedSkills[0] || 'First skill'],
+          weekStart: 1,
+          estimatedHours: 6,
+          deliverables: [`Working ${prioritizedSkills[0]} demo`, 'GitHub repository', 'Documentation']
         },
         {
-          title: `${role} Showcase Application`,
-          description: `Create a complete application demonstrating ${intermediate.join(', ')} skills`,
-          skills: [...fundamentals, ...intermediate],
-          weekStart: 2
+          title: `Intermediate: Combine ${prioritizedSkills.slice(0, 2).join(' + ')}`,
+          description: `Integrate multiple skills into one practical project`,
+          skills: prioritizedSkills.slice(0, 2),
+          weekStart: 2,
+          estimatedHours: 10,
+          deliverables: ['End-to-end application', 'Deployed demo', 'Blog post explaining']
         },
         {
-          title: `Portfolio Project: ${role} Ready`,
-          description: `Build a production-ready project using all learned skills: ${prioritizedSkills.join(', ')}`,
-          skills: prioritizedSkills,
-          weekStart: 3
+          title: `Portfolio: Real-World ${role} Project`,
+          description: `Build interview-worthy project showcasing all learned skills`,
+          skills: prioritizedSkills.slice(0, 5),
+          weekStart: 3,
+          estimatedHours: 15,
+          deliverables: ['Production-ready app', 'Complete documentation', 'Presentation slides']
         }
       ],
       checkpoints: [
         { 
           day: 7, 
-          milestone: `${fundamentals.join(' & ')} Mastery`, 
+          milestone: `Week 1: ${prioritizedSkills[0]} Foundation`,
           criteria: [
-            `Comfortable with ${fundamentals[0]} basics`,
-            `Completed 2-3 practice exercises`,
-            'Environment setup complete'
+            `Can explain what ${prioritizedSkills[0]} is and why it matters`,
+            `Set up environment successfully`,
+            `Completed 2-3 beginner tutorials`,
+            `Built first mini-project`
           ]
         },
         { 
           day: 14, 
-          milestone: `${intermediate.join(', ')} Proficiency`, 
+          milestone: `Week 2: Expanding Skills`,
           criteria: [
-            `Can build projects with ${intermediate[0]}`,
-            'Started portfolio application',
-            'Understanding advanced concepts'
+            `Comfortable with ${prioritizedSkills.slice(0, 2).join(' and ')}`,
+            `Completed intermediate tutorials`,
+            `Built project combining skills`,
+            `Can troubleshoot basic issues`
           ]
         },
         { 
           day: 21, 
-          milestone: 'Portfolio Project Complete', 
+          milestone: `Week 3: Advanced Topics`,
           criteria: [
-            'Major project deployed',
-            `Applied ${prioritizedSkills.slice(0, 5).join(', ')}`,
-            'GitHub portfolio updated'
+            `Working knowledge of ${prioritizedSkills.slice(0, 3).join(', ')}`,
+            `Portfolio project in progress`,
+            `Can explain concepts to others`,
+            `Contributing to learning communities`
           ]
         },
         { 
           day: 30, 
-          milestone: `🎯 Job-Ready ${role}!`, 
+          milestone: `🎯 Job-Ready with Missing Skills!`, 
           criteria: [
-            'Portfolio showcases all target skills',
-            'Can explain all projects confidently',
-            'Ready for technical interviews',
-            `Mastered: ${prioritizedSkills.join(', ')}`
+            `Mastered missing skills: ${prioritizedSkills.join(', ')}`,
+            `3 portfolio projects completed`,
+            `Can confidently discuss in interviews`,
+            `Ready to apply for ${role} positions`
           ]
         }
       ]
@@ -414,10 +438,10 @@ Return ONLY the JSON, no markdown or explanation.`;
             animate={{ opacity: 1, y: 0 }}
           >
             <h1 className="text-3xl md:text-4xl font-bold text-primary mb-2">
-              30-Day "Vibe-Check" Learning Roadmap
+              30-Day Roadmap to Learn Missing Skills
             </h1>
             <p className="text-muted-foreground mb-8">
-              Your personalized journey to becoming a {targetRole}
+              Practical, achievable plan to master your skill gaps for {targetRole}
             </p>
 
             {/* Multi-Agent Progress */}
@@ -446,6 +470,36 @@ Return ONLY the JSON, no markdown or explanation.`;
             {/* Roadmap Overview */}
             {roadmap && (
               <>
+                {/* Missing Skills Focus Banner */}
+                <Card className="p-6 mb-6 bg-gradient-to-r from-primary/10 to-secondary/10 border-2 border-primary/30">
+                  <div className="flex items-start gap-4">
+                    <Target className="w-10 h-10 text-primary flex-shrink-0 mt-1" />
+                    <div className="flex-1">
+                      <h3 className="text-xl font-bold text-primary mb-2">
+                        🎯 Focus: Learning Your Missing Skills
+                      </h3>
+                      <p className="text-muted-foreground mb-4">
+                        This roadmap is specifically designed to help you master the skills you're currently lacking for the <span className="font-semibold">{roadmap.targetRole}</span> role.
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {skillGapData?.missingSkills?.slice(0, 8).map((skill: any, idx: number) => (
+                          <Badge key={idx} className="bg-red-100 text-red-700 border-red-300">
+                            {skill.skill || skill}
+                          </Badge>
+                        ))}
+                      </div>
+                      <p className="text-sm text-muted-foreground mt-3">
+                        ⏰ <strong>Realistic pace:</strong> 2-4 hours daily • Complex skills get more days • Focus on 1-2 skills per week
+                      </p>
+                      <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                        <p className="text-sm text-blue-800">
+                          📚 <strong>Resources curated from:</strong> Top Reddit recommendations, highly-rated Udemy/Coursera courses, and community-voted tutorials
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+
                 <div className="grid md:grid-cols-3 gap-6 mb-8">
                   <Card className="p-6">
                     <div className="flex items-center gap-3 mb-2">

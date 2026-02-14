@@ -3,15 +3,11 @@ import { motion } from 'framer-motion';
 import { Helmet } from 'react-helmet-async';
 import { 
   FileText, 
-  BookOpen, 
-  Briefcase, 
-  MessageSquare, 
   Target, 
   Upload,
-  Sparkles,
+  Bot,
   ArrowRight,
-  TrendingUp,
-  Key
+  TrendingUp
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useUser } from '@/contexts/UserContext';
@@ -19,13 +15,9 @@ import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
 import DashboardNavbar from '@/components/DashboardNavbar';
 import TypewriterText from '@/components/dashboard/TypewriterText';
 import { supabase } from '@/integrations/supabase/client';
-import { Input } from '@/components/ui/input';
 
 interface DashboardStats {
   resumesCount: number;
-  resourcesCount: number;
-  jobsCount: number;
-  chatsCount: number;
 }
 
 const featureCards = [
@@ -45,42 +37,25 @@ const featureCards = [
   },
   {
     title: 'Skill Gap Analysis',
-    description: 'Identify skills to develop',
+    description: 'Identify skills to develop for your dream role',
     icon: Target,
     href: '/skill-gap',
     gradient: 'from-orange-500 to-red-500',
   },
   {
-    title: 'Learning Resources',
-    description: 'Get personalized learning paths',
-    icon: BookOpen,
-    href: '/resources',
+    title: '30-Day Roadmap',
+    description: 'Get your personalized learning roadmap',
+    icon: TrendingUp,
+    href: '/roadmap-30-day',
     gradient: 'from-green-500 to-emerald-500',
-  },
-  {
-    title: 'Job Matching',
-    description: 'Find jobs that match your profile',
-    icon: Briefcase,
-    href: '/jobs',
-    gradient: 'from-indigo-500 to-purple-500',
-  },
-  {
-    title: 'Career Chat',
-    description: 'Get AI career guidance',
-    icon: MessageSquare,
-    href: '/resources',
-    gradient: 'from-pink-500 to-rose-500',
   },
 ];
 
 const Dashboard = () => {
-  const { userProfile, isLoading, openAIKey, setOpenAIKey } = useUser();
+  const { userProfile, isLoading } = useUser();
   const navigate = useNavigate();
   const [stats, setStats] = useState<DashboardStats>({
     resumesCount: 0,
-    resourcesCount: 0,
-    jobsCount: 0,
-    chatsCount: 0,
   });
 
   useEffect(() => {
@@ -99,18 +74,13 @@ const Dashboard = () => {
     if (!userProfile) return;
 
     try {
-      const [resumes, resources, jobs, chats] = await Promise.all([
-        supabase.from('resumes').select('id', { count: 'exact' }).eq('user_profile_id', userProfile.id),
-        supabase.from('resources').select('id', { count: 'exact' }).eq('user_profile_id', userProfile.id),
-        supabase.from('jobs').select('id', { count: 'exact' }).eq('user_profile_id', userProfile.id),
-        supabase.from('chat_history').select('id', { count: 'exact' }).eq('user_profile_id', userProfile.id),
-      ]);
+      const resumes = await supabase
+        .from('resumes')
+        .select('id', { count: 'exact' })
+        .eq('user_profile_id', userProfile.id);
 
       setStats({
         resumesCount: resumes.count || 0,
-        resourcesCount: resources.count || 0,
-        jobsCount: jobs.count || 0,
-        chatsCount: chats.count || 0,
       });
     } catch (error) {
       console.error('Error fetching stats:', error);
@@ -134,7 +104,7 @@ const Dashboard = () => {
   return (
     <>
       <Helmet>
-        <title>Dashboard - AI Career Navigator</title>
+        <title>Dashboard - Career Agent</title>
         <meta name="description" content="Your personalized career dashboard" />
       </Helmet>
 
@@ -143,19 +113,6 @@ const Dashboard = () => {
         <DashboardSidebar />
         
         <main className="ml-20 lg:ml-[280px] transition-all duration-300 pt-24 pb-12">
-          {/* API Key Input */}
-          <div className="max-w-6xl mx-auto px-6 pt-4">
-            <div className="flex items-center gap-2 max-w-xs">
-              <Key className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-              <Input
-                type="password"
-                placeholder="Enter your OpenAI API key"
-                value={openAIKey}
-                onChange={(e) => setOpenAIKey(e.target.value)}
-                className="h-8 text-xs"
-              />
-            </div>
-          </div>
           <div className="max-w-6xl mx-auto px-6 py-8">
             {/* Welcome Section */}
             <motion.div
@@ -170,7 +127,7 @@ const Dashboard = () => {
                   transition={{ delay: 0.2, type: 'spring' }}
                   className="w-12 h-12 rounded-2xl gradient-bg flex items-center justify-center"
                 >
-                  <Sparkles className="w-6 h-6 text-primary-foreground" />
+                  <Bot className="w-6 h-6 text-primary-foreground" />
                 </motion.div>
                 <div>
                   <h1 className="text-3xl md:text-4xl font-bold text-primary">
@@ -202,13 +159,11 @@ const Dashboard = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12"
+              className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-12 max-w-2xl"
             >
               {[
-                { label: 'Resumes', value: stats.resumesCount, icon: FileText },
-                { label: 'Resources', value: stats.resourcesCount, icon: BookOpen },
-                { label: 'Jobs Applied', value: stats.jobsCount, icon: Briefcase },
-                { label: 'Conversations', value: stats.chatsCount, icon: MessageSquare },
+                { label: 'Resumes Uploaded', value: stats.resumesCount, icon: FileText },
+                { label: 'Skills Analyzed', value: stats.resumesCount > 0 ? stats.resumesCount * 3 : 0, icon: Target },
               ].map((stat, index) => (
                 <motion.div
                   key={stat.label}

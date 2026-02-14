@@ -269,7 +269,7 @@ const ResumeScreening = () => {
   return (
     <>
       <Helmet>
-        <title>AI Resume Screening - AI Career Navigator</title>
+        <title>AI Resume Screening - Career Agent</title>
         <meta name="description" content="Get instant AI-powered resume analysis with ATS scoring and improvement suggestions." />
       </Helmet>
 

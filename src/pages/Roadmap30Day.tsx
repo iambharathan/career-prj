@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { motion } from 'framer-motion';
-import { ArrowLeft, Calendar, CheckCircle2, BookOpen, Github, Linkedin, FileText, Loader2, Target, TrendingUp } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowLeft, Calendar, CheckCircle2, BookOpen, Github, Linkedin, FileText, Loader2, Target, TrendingUp, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -54,6 +54,7 @@ const Roadmap30Day = () => {
   const [roadmap, setRoadmap] = useState<Roadmap | null>(null);
   const [agentStatus, setAgentStatus] = useState<string[]>([]);
   const [currentAgent, setCurrentAgent] = useState<string>('');
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
   const { toast } = useToast();
   const { openAIKey } = useUser();
   const location = useLocation();
@@ -236,12 +237,12 @@ Return ONLY valid JSON, no markdown formatting.`;
 
   // Helper function to create intelligent roadmap based on missing skills
   const createIntelligentRoadmap = (role: string, currentSkills: string[], missingSkills: string[]): Roadmap => {
-    const prioritizedSkills = missingSkills.length > 0 ? missingSkills.slice(0, 8) : ['System Design', 'Testing', 'CI/CD', 'Cloud Services'];
+    const prioritizedSkills = missingSkills.length > 0 ? missingSkills.slice(0, 6) : ['Docker', 'Kubernetes', 'CI/CD', 'Cloud Services', 'Testing', 'System Design'];
     
     // Allocate realistic days per skill based on complexity
     const getSkillDays = (skill: string): number => {
-      const complexSkills = ['kubernetes', 'terraform', 'aws', 'azure', 'react', 'angular', 'django'];
-      const mediumSkills = ['docker', 'jenkins', 'ansible', 'mongodb', 'postgresql'];
+      const complexSkills = ['kubernetes', 'terraform', 'aws', 'azure', 'react', 'angular', 'django', 'system design'];
+      const mediumSkills = ['docker', 'jenkins', 'ansible', 'mongodb', 'postgresql', 'ci/cd', 'testing'];
       const lowerSkill = skill.toLowerCase();
       
       if (complexSkills.some(s => lowerSkill.includes(s))) return 7; // 1 week for complex
@@ -249,76 +250,80 @@ Return ONLY valid JSON, no markdown formatting.`;
       return 3; // 3 days for basics
     };
     
-    // Build realistic daily schedule
-    const dailySchedule: Array<{
-      day: number;
-      skill: string;
-      phase: 'intro' | 'practice' | 'project' | 'checkpoint';
-    }> = [];
-    
+    // Build complete 30-day schedule with all skills distributed
+    const allDays: DayTask[] = [];
     let currentDay = 1;
-    prioritizedSkills.forEach((skill, index) => {
-      const days = getSkillDays(skill);
-      const introDays = Math.ceil(days * 0.4); // 40% intro
-      const practiceDays = Math.floor(days * 0.6); // 60% practice
+    
+    // Distribute skills across 30 days
+    prioritizedSkills.forEach((skill, skillIndex) => {
+      const skillDays = Math.min(getSkillDays(skill), 30 - currentDay + 1); // Don't exceed 30 days
       
-      // Intro phase
-      for (let i = 0; i < introDays; i++) {
-        if (currentDay <= 30) {
-          dailySchedule.push({ day: currentDay++, skill, phase: 'intro' });
-        }
-      }
-      
-      // Practice phase
-      for (let i = 0; i < practiceDays; i++) {
-        if (currentDay <= 30) {
-          dailySchedule.push({ day: currentDay++, skill, phase: 'practice' });
-        }
-      }
-      
-      // Add checkpoint every 7 days
-      if (currentDay % 7 === 0 && currentDay <= 30) {
-        dailySchedule.push({ day: currentDay++, skill: 'Review', phase: 'checkpoint' });
+      // Create days for this skill
+      for (let dayInSkill = 1; dayInSkill <= skillDays && currentDay <= 30; dayInSkill++) {
+        const isEarlyDays = dayInSkill <= Math.ceil(skillDays * 0.4);
+        const isProject = dayInSkill === skillDays && skillDays >= 4;
+        
+        allDays.push({
+          day: currentDay,
+          title: isProject 
+            ? `${skill} - Hands-on Practice`
+            : isEarlyDays 
+            ? `${skill} - Day ${dayInSkill}: Fundamentals`
+            : `${skill} - Day ${dayInSkill}: Hands-on Practice`,
+          description: isProject
+            ? `Practice ${skill} with exercises, tutorials, and mini-challenges`
+            : isEarlyDays
+            ? `Learn ${skill} concepts, setup environment, follow official docs`
+            : `Practice ${skill} with exercises, tutorials, and mini-challenges`,
+          type: isProject && skillDays >= 5 ? 'project' : 'learning',
+          resources: [
+            `${skill} Official Documentation`,
+            `${skill} for Beginners - Complete Course`,
+            `${skill} Hands-on Tutorial`,
+            isEarlyDays ? `${skill} Setup Guide` : `Build Mini ${skill} Project`
+          ],
+          estimatedHours: 3
+        });
+        
+        currentDay++;
       }
     });
     
-    // Group into weeks
+    // Fill remaining days if less than 30
+    while (currentDay <= 30) {
+      const lastSkill = prioritizedSkills[prioritizedSkills.length - 1] || 'Skills';
+      allDays.push({
+        day: currentDay,
+        title: `${lastSkill} - Advanced Practice`,
+        description: `Continue practicing ${lastSkill} with advanced exercises and projects`,
+        type: 'learning',
+        resources: [
+          `${lastSkill} Advanced Topics`,
+          `${lastSkill} Real-world Projects`,
+          `${lastSkill} Interview Questions`
+        ],
+        estimatedHours: 3
+      });
+      currentDay++;
+    }
+    
+    // Group into 4 weeks (7 days each, last week has 9 days)
     const weeks: WeekPlan[] = [];
     for (let weekNum = 1; weekNum <= 4; weekNum++) {
       const startDay = (weekNum - 1) * 7 + 1;
-      const endDay = Math.min(weekNum * 7, 30);
-      const weekDays = dailySchedule.filter(d => d.day >= startDay && d.day <= endDay);
+      const endDay = weekNum === 4 ? 30 : weekNum * 7; // Week 4 goes to day 30
+      const weekDays = allDays.filter(d => d.day >= startDay && d.day <= endDay);
       
-      const mainSkill = weekDays[0]?.skill || 'Skills';
+      // Get primary skill(s) for this week
+      const skillsInWeek = [...new Set(weekDays.map(d => d.title.split(' - ')[0]))];
+      const weekFocus = skillsInWeek.length === 1 
+        ? skillsInWeek[0]
+        : skillsInWeek.slice(0, 2).join(' & ');
       
       weeks.push({
         week: weekNum,
-        focus: `Master ${mainSkill} (Realistic Pace)`,
-        days: weekDays.map(({ day, skill, phase }) => ({
-          day,
-          title: phase === 'checkpoint' ? `Week ${weekNum} Checkpoint` :
-                 phase === 'intro' ? `${skill} - Day ${day - startDay + 1}: Fundamentals` :
-                 phase === 'project' ? `${skill} - Build Project` :
-                 `${skill} - Day ${day - startDay + 1}: Hands-on Practice`,
-          description: phase === 'checkpoint' ? `Review progress. Can you explain ${mainSkill}? Built something?` :
-                      phase === 'intro' ? `Learn ${skill} concepts, setup environment, follow official docs` :
-                      phase === 'project' ? `Build a real project using ${skill} to solidify learning` :
-                      `Practice ${skill} with exercises, tutorials, and mini-challenges`,
-          type: phase === 'checkpoint' ? 'checkpoint' : 
-                phase === 'project' ? 'project' : 'learning',
-          resources: phase === 'checkpoint' ? [
-            `Self-assessment: Skills learned so far`,
-            `Review projects and code`,
-            `Practice explaining concepts aloud`
-          ] : [
-            `${skill} Official Documentation`,
-            `${skill} for Beginners - Complete Course`,
-            `${skill} Tutorial by TechWorld with Nana`,
-            `${skill} Interactive Lab on Katacoda`,
-            phase === 'intro' ? `${skill} Best Practices Guide` : `Build Mini ${skill} Project`
-          ],
-          estimatedHours: phase === 'checkpoint' ? 2 : phase === 'project' ? 4 : 3
-        }))
+        focus: `Master ${weekFocus} (Realistic Pace)`,
+        days: weekDays
       });
     }
     
@@ -338,9 +343,9 @@ Return ONLY valid JSON, no markdown formatting.`;
           deliverables: [`Working ${prioritizedSkills[0]} demo`, 'GitHub repository', 'Documentation']
         },
         {
-          title: `Intermediate: Combine ${prioritizedSkills.slice(0, 2).join(' + ')}`,
+          title: `Intermediate: Combine ${prioritizedSkills.slice(0, 3).join(' + ')}`,
           description: `Integrate multiple skills into one practical project`,
-          skills: prioritizedSkills.slice(0, 2),
+          skills: prioritizedSkills.slice(0, 3),
           weekStart: 2,
           estimatedHours: 10,
           deliverables: ['End-to-end application', 'Deployed demo', 'Blog post explaining']
@@ -417,10 +422,67 @@ Return ONLY valid JSON, no markdown formatting.`;
     }
   };
 
+  // Group consecutive similar days together
+  const groupSimilarDays = (days: DayTask[]) => {
+    const groups: { title: string; days: DayTask[]; dayRange: string }[] = [];
+    let currentGroup: DayTask[] = [];
+    let currentTitle = '';
+
+    days.forEach((day, index) => {
+      // Extract base title (without "Day X:")
+      const baseTitle = day.title.replace(/^Day \d+:\s*/, '').replace(/\s*-\s*Day\s*\d+.*$/, '');
+      
+      if (currentTitle === '' || baseTitle === currentTitle) {
+        currentTitle = baseTitle;
+        currentGroup.push(day);
+      } else {
+        // Save current group and start new one
+        if (currentGroup.length > 0) {
+          const firstDay = currentGroup[0].day;
+          const lastDay = currentGroup[currentGroup.length - 1].day;
+          const dayRange = currentGroup.length > 1 ? `Day ${firstDay}-${lastDay}` : `Day ${firstDay}`;
+          groups.push({
+            title: currentTitle,
+            days: currentGroup,
+            dayRange
+          });
+        }
+        currentTitle = baseTitle;
+        currentGroup = [day];
+      }
+    });
+
+    // Add last group
+    if (currentGroup.length > 0) {
+      const firstDay = currentGroup[0].day;
+      const lastDay = currentGroup[currentGroup.length - 1].day;
+      const dayRange = currentGroup.length > 1 ? `Day ${firstDay}-${lastDay}` : `Day ${firstDay}`;
+      groups.push({
+        title: currentTitle,
+        days: currentGroup,
+        dayRange
+      });
+    }
+
+    return groups;
+  };
+
+  const toggleGroup = (groupKey: string) => {
+    setExpandedGroups(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(groupKey)) {
+        newSet.delete(groupKey);
+      } else {
+        newSet.add(groupKey);
+      }
+      return newSet;
+    });
+  };
+
   return (
     <>
       <Helmet>
-        <title>30-Day Roadmap | AI Career Navigator</title>
+        <title>30-Day Roadmap | Career Agent</title>
       </Helmet>
       <DashboardNavbar />
       
@@ -531,42 +593,95 @@ Return ONLY valid JSON, no markdown formatting.`;
                 </div>
 
                 {/* Weekly Breakdown */}
-                {roadmap.weeks.map((week) => (
-                  <Card key={week.week} className="p-6 mb-6">
-                    <div className="flex items-center justify-between mb-6">
-                      <h3 className="text-2xl font-bold text-primary">Week {week.week}</h3>
-                      <Badge variant="secondary" className="text-sm">{week.focus}</Badge>
-                    </div>
-                    
-                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {week.days.map((day) => (
-                        <Card key={day.day} className={`p-4 border-2 ${getTypeColor(day.type)}`}>
-                          <div className="flex items-start justify-between mb-2">
-                            <div className="flex items-center gap-2">
-                              {getTypeIcon(day.type)}
-                              <span className="font-semibold">Day {day.day}</span>
-                            </div>
-                            <Badge variant="outline" className="text-xs">
-                              {day.estimatedHours}h
-                            </Badge>
-                          </div>
-                          <h4 className="font-semibold mb-2">{day.title}</h4>
-                          <p className="text-sm text-muted-foreground mb-3">{day.description}</p>
-                          {day.resources.length > 0 && (
-                            <div className="text-xs text-muted-foreground">
-                              <p className="font-medium mb-1">Resources:</p>
-                              <ul className="list-disc list-inside space-y-0.5">
-                                {day.resources.slice(0, 2).map((resource, idx) => (
-                                  <li key={idx}>{resource}</li>
-                                ))}
-                              </ul>
-                            </div>
-                          )}
-                        </Card>
-                      ))}
-                    </div>
-                  </Card>
-                ))}
+                {roadmap.weeks.map((week) => {
+                  const dayGroups = groupSimilarDays(week.days);
+                  
+                  return (
+                    <Card key={week.week} className="p-6 mb-6">
+                      <div className="flex items-center justify-between mb-6">
+                        <h3 className="text-2xl font-bold text-primary">Week {week.week}</h3>
+                        <Badge variant="secondary" className="text-sm">{week.focus}</Badge>
+                      </div>
+                      
+                      <div className="space-y-4">
+                        {dayGroups.map((group, groupIndex) => {
+                          const groupKey = `week-${week.week}-group-${groupIndex}`;
+                          const isExpanded = expandedGroups.has(groupKey);
+                          const totalHours = group.days.reduce((sum, day) => sum + day.estimatedHours, 0);
+                          
+                          return (
+                            <Card key={groupKey} className="border-2 border-primary/20 overflow-hidden">
+                              {/* Group Header - Clickable */}
+                              <button
+                                onClick={() => toggleGroup(groupKey)}
+                                className="w-full p-4 bg-gradient-to-r from-primary/5 to-secondary/5 hover:from-primary/10 hover:to-secondary/10 transition-colors text-left"
+                              >
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-3 flex-1">
+                                    {getTypeIcon(group.days[0].type)}
+                                    <div>
+                                      <h4 className="font-bold text-lg text-primary">{group.title}</h4>
+                                      <p className="text-sm text-muted-foreground">{group.dayRange} • {totalHours}h total</p>
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <Badge variant="outline">{group.days.length} days</Badge>
+                                    {isExpanded ? (
+                                      <ChevronUp className="w-5 h-5 text-primary" />
+                                    ) : (
+                                      <ChevronDown className="w-5 h-5 text-primary" />
+                                    )}
+                                  </div>
+                                </div>
+                              </button>
+
+                              {/* Expanded Daily Breakdown */}
+                              <AnimatePresence>
+                                {isExpanded && (
+                                  <motion.div
+                                    initial={{ height: 0, opacity: 0 }}
+                                    animate={{ height: 'auto', opacity: 1 }}
+                                    exit={{ height: 0, opacity: 0 }}
+                                    transition={{ duration: 0.3 }}
+                                    className="overflow-hidden"
+                                  >
+                                    <div className="p-4 space-y-4 bg-white">
+                                      {group.days.map((day) => (
+                                        <Card key={day.day} className={`p-4 border-2 ${getTypeColor(day.type)}`}>
+                                          <div className="flex items-start justify-between mb-2">
+                                            <div className="flex items-center gap-2">
+                                              {getTypeIcon(day.type)}
+                                              <span className="font-semibold">Day {day.day}</span>
+                                            </div>
+                                            <Badge variant="outline" className="text-xs">
+                                              {day.estimatedHours}h
+                                            </Badge>
+                                          </div>
+                                          <h5 className="font-semibold mb-2">{day.title}</h5>
+                                          <p className="text-sm text-muted-foreground mb-3">{day.description}</p>
+                                          {day.resources.length > 0 && (
+                                            <div className="text-xs">
+                                              <p className="font-medium mb-2 text-primary">📚 Learning Resources:</p>
+                                              <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+                                                {day.resources.map((resource, idx) => (
+                                                  <li key={idx} className="ml-2">{resource}</li>
+                                                ))}
+                                              </ul>
+                                            </div>
+                                          )}
+                                        </Card>
+                                      ))}
+                                    </div>
+                                  </motion.div>
+                                )}
+                              </AnimatePresence>
+                            </Card>
+                          );
+                        })}
+                      </div>
+                    </Card>
+                  );
+                })}
 
                 {/* Major Projects */}
                 <Card className="p-6 mb-6">

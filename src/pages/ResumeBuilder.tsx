@@ -13,6 +13,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { Link } from 'react-router-dom';
 import DashboardNavbar from '@/components/DashboardNavbar';
 import { useUser } from '@/contexts/UserContext';
+import { getOpenAIKey } from '@/config/apiKeys';
+import OpenAI from 'openai';
 
 interface ResumeData {
   personalInfo: {
@@ -72,8 +74,9 @@ const ResumeBuilder = () => {
   const [isGenerating, setIsGenerating] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(true);
   const [aiPrompt, setAiPrompt] = useState('');
+  const [localApiKey, setLocalApiKey] = useState('');
   const { toast } = useToast();
-  const { userProfile, openAIKey } = useUser();
+  const { userProfile, openAIKey, setOpenAIKey } = useUser();
 
   const generateSection = async (section: string, userInput: string, existingContent?: string) => {
     if (!userInput.trim()) {
@@ -85,30 +88,68 @@ const ResumeBuilder = () => {
       return;
     }
 
-    if (!openAIKey) {
+    // Get API key from .env file first, then fallback to other sources
+    const apiKey = getOpenAIKey() || openAIKey || localApiKey || localStorage.getItem('openai_api_key') || '';
+    
+    if (!apiKey) {
       toast({
         title: 'API key required',
-        description: 'Please enter your OpenAI API key in the dashboard.',
+        description: 'OpenAI API key not configured. Please add VITE_OPENAI_API_KEY to your .env file.',
         variant: 'destructive',
       });
       return;
     }
 
+    // Save to localStorage for future use if manually entered
+    if (localApiKey && !openAIKey && !getOpenAIKey()) {
+      localStorage.setItem('openai_api_key', localApiKey);
+    }
+
     setIsGenerating(section);
     try {
-      const { data, error } = await supabase.functions.invoke('generate-resume-section', {
-        body: { section, userInput, existingContent, openAIKey },
+      const openai = new OpenAI({
+        apiKey: apiKey,
+        dangerouslyAllowBrowser: true
       });
 
-      if (error) throw error;
+      let prompt = '';
+      if (section === 'summary') {
+        prompt = `Write a professional resume summary (2-3 sentences) based on this information: ${userInput}. ${existingContent ? `Current summary: ${existingContent}. Improve it.` : ''}`;
+      } else if (section === 'skills') {
+        prompt = `Create a concise list of relevant skills (separated by commas) based on: ${userInput}. ${existingContent ? `Existing skills: ${existingContent}. Add more relevant ones.` : ''}`;
+      } else if (section === 'certifications') {
+        prompt = `List professional certifications (one per line) based on: ${userInput}. ${existingContent ? `Existing certifications: ${existingContent}. Add more if relevant.` : ''}`;
+      } else if (section === 'experience') {
+        prompt = `Write professional bullet points (3-5 points) for this work experience: ${userInput}. Use action verbs and quantify achievements when possible.`;
+      } else if (section === 'project') {
+        prompt = `Write a professional project description (2-3 sentences) based on: ${userInput}. Focus on what was built, technologies used, and impact.`;
+      }
 
-      if (data.content) {
+      const completion = await openai.chat.completions.create({
+        model: 'gpt-4o-mini',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are a professional resume writer. Create concise, impactful, ATS-friendly content. Use action verbs and quantify achievements.'
+          },
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        temperature: 0.7,
+        max_tokens: 500
+      });
+
+      const content = completion.choices[0]?.message?.content || '';
+
+      if (content) {
         if (section === 'summary') {
-          setResumeData(prev => ({ ...prev, summary: data.content }));
+          setResumeData(prev => ({ ...prev, summary: content }));
         } else if (section === 'skills') {
-          setResumeData(prev => ({ ...prev, skills: data.content }));
+          setResumeData(prev => ({ ...prev, skills: content }));
         } else if (section === 'certifications') {
-          setResumeData(prev => ({ ...prev, certifications: data.content }));
+          setResumeData(prev => ({ ...prev, certifications: content }));
         }
         
         toast({
@@ -116,11 +157,11 @@ const ResumeBuilder = () => {
           description: 'AI has generated content for your resume section.',
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Generation error:', error);
       toast({
         title: 'Generation failed',
-        description: 'Failed to generate content. Please try again.',
+        description: error?.message || 'Failed to generate content. Please check your API key and try again.',
         variant: 'destructive',
       });
     } finally {
@@ -339,7 +380,7 @@ const ResumeBuilder = () => {
   return (
     <>
       <Helmet>
-        <title>AI Resume Builder - AI Career Navigator</title>
+        <title>AI Resume Builder - Career Agent</title>
         <meta name="description" content="Build an ATS-optimized resume with AI assistance. Step-by-step builder with live preview." />
       </Helmet>
 

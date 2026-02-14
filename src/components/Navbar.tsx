@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Menu, X, Sparkles } from 'lucide-react';
+import { Menu, X, Bot } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 
 const navLinks = [
@@ -8,7 +8,7 @@ const navLinks = [
   { name: 'Resume Screening', href: '/resume-screening' },
   { name: 'Resume Builder', href: '/resume-builder' },
   { name: 'Skill Gap', href: '/skill-gap' },
-  { name: 'Jobs', href: '/jobs' },
+  { name: '30-Day Roadmap', href: '/roadmap-30-day' },
 ];
 
 const Navbar = () => {
@@ -39,10 +39,10 @@ const Navbar = () => {
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 group">
             <div className="w-10 h-10 rounded-xl gradient-bg flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-primary-foreground" />
+              <Bot className="w-5 h-5 text-primary-foreground" />
             </div>
             <span className="font-bold text-xl text-primary">
-              AI Career<span className="text-secondary">Nav</span>
+              Career <span className="text-secondary font-bold">Agent</span>
             </span>
           </Link>
 
@@ -67,7 +67,7 @@ const Navbar = () => {
           {/* CTA Button */}
           <div className="hidden md:block">
             <Link to="/resume-screening" className="btn-primary inline-flex items-center gap-2">
-              <Sparkles className="w-4 h-4" />
+              <Bot className="w-4 h-4" />
               Get Started
             </Link>
           </div>

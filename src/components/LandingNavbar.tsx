@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Menu, X, Sparkles } from 'lucide-react';
+import { Menu, X, Bot } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import GetStartedModal from './GetStartedModal';
 import { useUser } from '@/contexts/UserContext';
@@ -73,10 +73,10 @@ const LandingNavbar = () => {
             {/* Logo */}
             <Link to="/" className="flex items-center gap-2 group">
               <div className="w-10 h-10 rounded-xl gradient-bg flex items-center justify-center">
-                <Sparkles className="w-5 h-5 text-primary-foreground" />
+                <Bot className="w-5 h-5 text-primary-foreground" />
               </div>
               <span className="font-bold text-xl text-primary">
-                AI Career<span className="text-secondary">Nav</span>
+                Career <span className="text-secondary font-bold">Agent</span>
               </span>
             </Link>
 
@@ -101,7 +101,7 @@ const LandingNavbar = () => {
             {/* CTA Button */}
             <div className="hidden md:block">
               <button onClick={handleGetStarted} className="btn-primary inline-flex items-center gap-2">
-                <Sparkles className="w-4 h-4" />
+                <Bot className="w-4 h-4" />
                 Get Started
               </button>
             </div>

@@ -229,7 +229,7 @@ const SkillGap = () => {
   return (
     <>
       <Helmet>
-        <title>Skill Gap Detection - AI Career Navigator</title>
+        <title>Skill Gap Detection - Career Agent</title>
         <meta name="description" content="Identify skill gaps between your current abilities and target role requirements." />
       </Helmet>
 

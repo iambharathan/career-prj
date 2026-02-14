@@ -2,14 +2,13 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
   FileText, 
-  BookOpen, 
-  Briefcase, 
   Target, 
   Upload,
   Home,
-  Sparkles,
+  Bot,
   Menu,
-  X
+  X,
+  TrendingUp
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -19,8 +18,7 @@ const navItems = [
   { href: '/resume-screening', icon: Upload, label: 'Screen Resume' },
   { href: '/resume-builder', icon: FileText, label: 'Build Resume' },
   { href: '/skill-gap', icon: Target, label: 'Skill Gap' },
-  { href: '/resources', icon: BookOpen, label: 'Resources' },
-  { href: '/jobs', icon: Briefcase, label: 'Jobs' },
+  { href: '/roadmap-30-day', icon: TrendingUp, label: '30-Day Roadmap' },
 ];
 
 const DashboardNavbar = () => {
@@ -50,10 +48,10 @@ const DashboardNavbar = () => {
           {/* Logo */}
           <Link to="/dashboard" className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg gradient-bg flex items-center justify-center">
-              <Sparkles className="w-4 h-4 text-primary-foreground" />
+              <Bot className="w-4 h-4 text-primary-foreground" />
             </div>
             <span className="font-bold text-sm text-primary hidden sm:block">
-              AI Career<span className="text-secondary">Nav</span>
+              Career <span className="text-secondary font-bold">Agent</span>
             </span>
           </Link>
 

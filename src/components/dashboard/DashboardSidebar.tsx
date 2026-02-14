@@ -2,9 +2,6 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   FileText, 
-  BookOpen, 
-  Briefcase, 
-  MessageSquare, 
   ChevronLeft, 
   ChevronRight,
   Home,
@@ -29,30 +26,6 @@ const sections: SidebarSection[] = [
     items: [
       { label: 'Created Resumes', href: '/dashboard/resumes/created', icon: PenTool },
       { label: 'Uploaded Resumes', href: '/dashboard/resumes/uploaded', icon: Upload },
-    ],
-  },
-  {
-    id: 'resources',
-    title: 'Resources',
-    icon: BookOpen,
-    items: [
-      { label: 'Enrolled Resources', href: '/dashboard/resources' },
-    ],
-  },
-  {
-    id: 'jobs',
-    title: 'Jobs',
-    icon: Briefcase,
-    items: [
-      { label: 'Applied Jobs', href: '/dashboard/jobs' },
-    ],
-  },
-  {
-    id: 'chat',
-    title: 'Chat History',
-    icon: MessageSquare,
-    items: [
-      { label: 'All Conversations', href: '/dashboard/chat-history' },
     ],
   },
 ];

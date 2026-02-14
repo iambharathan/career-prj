@@ -1,13 +1,10 @@
 import { motion } from 'framer-motion';
 import { 
   FileText, 
-  BookOpen, 
-  Briefcase, 
-  MessageSquare, 
   Target, 
-  Route,
   Upload,
-  Home
+  Home,
+  TrendingUp
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -17,9 +14,7 @@ const navItems = [
   { href: '/resume-screening', icon: Upload, label: 'Screen Resume' },
   { href: '/resume-builder', icon: FileText, label: 'Build Resume' },
   { href: '/skill-gap', icon: Target, label: 'Skill Gap' },
-  { href: '/resources', icon: BookOpen, label: 'Resources' },
-  { href: '/jobs', icon: Briefcase, label: 'Jobs' },
-  { href: '/dashboard/chat-history', icon: MessageSquare, label: 'Chat' },
+  { href: '/roadmap-30-day', icon: TrendingUp, label: 'Roadmap' },
 ];
 
 const FloatingNav = () => {

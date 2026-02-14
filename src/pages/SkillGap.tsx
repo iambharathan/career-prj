@@ -246,8 +246,8 @@ const SkillGap = () => {
             animate={{ opacity: 1, y: 0 }}
             className="max-w-5xl mx-auto"
           >
-            <h1 className="text-3xl md:text-4xl font-bold text-primary mb-2">30-Day Career Roadmap Builder</h1>
-            <p className="text-muted-foreground mb-8">AI-powered analysis of your skills vs dream role + personalized 30-day learning path</p>
+            <h1 className="text-3xl md:text-4xl font-bold text-primary mb-2">Skill Gap Detection</h1>
+            <p className="text-muted-foreground mb-8">Identify gaps between your skills and target role requirements</p>
 
             {!analysis ? (
               <Card className="glass-card p-6 md:p-8">
@@ -363,12 +363,12 @@ const SkillGap = () => {
                     {isAnalyzing ? (
                       <>
                         <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                        Generating Your 30-Day Roadmap...
+                        Analyzing Skill Gaps...
                       </>
                     ) : (
                       <>
                         <TrendingUp className="w-5 h-5 mr-2" />
-                        🎯 Generate My 30-Day "Vibe-Check" Roadmap
+                        Analyze Skill Gap
                       </>
                     )}
                   </Button>

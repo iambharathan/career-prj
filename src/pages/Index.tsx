@@ -1,7 +1,7 @@
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Bot, ArrowRight, Upload, Target, TrendingUp, LayoutDashboard } from 'lucide-react';
+import { Bot, ArrowRight, Upload, Target, TrendingUp } from 'lucide-react';
 
 const Index = () => {
   return (
@@ -63,13 +63,6 @@ const Index = () => {
               <Upload className="w-6 h-6" />
               Start Your Career Analysis
               <ArrowRight className="w-6 h-6" />
-            </Link>
-            <Link
-              to="/dashboard"
-              className="inline-flex items-center gap-3 px-8 py-4 text-lg font-semibold text-primary bg-white border-2 border-primary rounded-full shadow-lg hover:shadow-xl hover:bg-primary/5 transform hover:scale-105 transition-all duration-300"
-            >
-              <LayoutDashboard className="w-6 h-6" />
-              Go to Dashboard
             </Link>
           </motion.div>
 

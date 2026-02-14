@@ -1,99 +1,288 @@
-# AI Career Navigator
+# 🤖 Career Agent
 
-**SDG 4 – Quality Education | SDG 8 – Decent Work & Economic Growth**
+> **AI-Powered Career Co-Pilot** - From Resume to Real Employment
 
-Intentional career development rarely happens by accident. We designed the AI Career Navigator as an **orchestrated workflow** that takes someone from uncertainty to clarity via measurable checkpoints and human-friendly outputs.
-
----
-
-## Workflow at a Glance
-
-1. **Capture & Analyze** – intake a resume or raw profile, parse every section with AI, and compute an ATS readiness score.
-2. **Generate & Optimize** – author a resume from scratch or polish the existing one with targeted phrasing, impact bullets, and formatting.
-3. **Discover Skill Gaps** – compare strengths to target roles, flag missing capabilities, and prioritize learning.
-4. **Learn & Practice** – translate gaps into curated, actionable learning pathways with checkpoints for mastery.
-5. **Match & Apply** – surface role-specific openings, generate cover letters, and track application outcomes.
-6. **Simulate Growth** – visualize salary trajectories, job stability, and career progression to inform decisions.
-7. **Measure & Iterate** – monitor progress via skill acquisition, readiness scores, and behavioral insights for continuous personalization.
-
-Each phase feeds data to the next, turning the user’s journey into a closed-loop system that adapts to changing aspirations.
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel-000?style=for-the-badge&logo=vercel)](https://career-3ne4hs5om-bharathans-projects-30f45a85.vercel.app/)
+[![Team](https://img.shields.io/badge/Team-7Byte-blue?style=for-the-badge)](https://github.com/iambharathan)
 
 ---
 
-## Detailed Workflow Phases
+## 🎯 Problem Statement
 
-### 1. Capture & Analyze
-- Upload an existing resume or import profile details.
-- AI parses sections using NLP, extracts entities via NER, and evaluates the document against ATS heuristics.
-- Outputs: ATS scorecard, formatting diagnostics, keyword alignment report.
-
-### 2. Generate & Optimize
-- For blank slates, the AI proposes section outlines, highlights relevant keywords, and suggests company-style language.
-- For drafts, it reorders sections, expands impact-driven bullets, and normalizes formatting for compatibility.
-- Outputs: downloadable resume draft, actionable revision checklist.
-
-### 3. Discover Skill Gaps
-- Semantic similarity compares the curated profile against live job descriptions.
-- The system ranks missing or weak skill areas and translates them into prioritized learning needs.
-- Outputs: skill gap matrix, role-targeted focus areas.
-
-### 4. Learn & Practice
-- Fetches resources from verified platforms (MOOCs, labs, documentation) or generates explanations via LLMs.
-- Structures learning into micro-quests with completion checks and optional hands-on projects.
-- Outputs: personalized learning roadmap, mastery tracker, encouragement nudges.
-
-### 5. Match & Apply
-- Tags the user’s expertise and searches aggregated job data (APIs, crawled datasets, partner feeds).
-- Recommends opportunities based on salary, location, remote preference, and growth potential.
-- Generates bespoke cover letters aligned to tone and role requirements.
-- Outputs: filtered job list, application templates, next-step reminders.
-
-### 6. Simulate Growth
-- Uses industry datasets and historical trends to project salary growth, job stability, and progression likelihood.
-- Visualizes alternate "what-if" pathways so users can weigh trade-offs before committing.
-- Outputs: growth dashboard, confidence score, narrative summaries for mentors/advisors.
-
-### 7. Measure & Iterate
-- Tracks learning progress, resume revisions, job engagement, and confidence metrics.
-- Recalibrates recommendations via feedback loops (learning completed, jobs applied to, responses received).
-- Outputs: growth diary, readiness pulse, AI mentor reflections.
+Job seekers struggle with:
+- **ATS Rejection**: 75% of resumes never reach human eyes due to poor ATS optimization
+- **Skill Gaps**: Candidates don't know what skills they're missing for their dream roles
+- **No Clear Roadmap**: Lack of structured learning paths to become job-ready
 
 ---
 
-## AI-First Architecture
+## 💡 Our Solution: Career Agent
 
-| Layer | Responsibility |
-|---|---|
-| **Interface** | Conversational onboarding, resume uploader, and dashboard that surfaces insights at every click. |
-| **AI Orchestration** | NLP (parsing, ATS), semantic similarity models, recommendation agents, generative builders, and predictive analytics pipelines. |
-| **Data Layer** | Profiles, job descriptions, learning content, salary datasets, user behavior signals stored securely for rapid retrieval. |
-| **Feedback Loop** | Progress signals feed retraining and personalization to keep suggestions aligned with evolving goals. |
-
-The platform is intentionally AI-first; no phase functions without the underlying intelligence stack.
+An **AI-powered career platform** that:
+1. **Analyzes resumes** using OpenAI GPT-4 for intelligent parsing
+2. **Identifies skill gaps** by comparing your skills against job requirements
+3. **Generates personalized 30-day learning roadmaps** with curated resources
 
 ---
 
-## Impact
+## 🚀 Live Demo
 
-### SDG 4 – Quality Education
-- Democratizes access to career capital regardless of background.
-- Makes learning relevant through role-aligned personalization.
-- Provides data-backed guidance for every step in the upskilling journey.
-
-### SDG 8 – Decent Work
-- Speeds up job readiness with ATS-vetted resumes and personalized applications.
-- Connects talent to meaningful job opportunities instead of noise.
-- Visualizes economic mobility via predictive growth modeling.
-
-Success is measured in resume quality lifts, skill mastery completion, application rates, and employment outcomes.
+**🔗 [https://career-3ne4hs5om-bharathans-projects-30f45a85.vercel.app/](https://career-3ne4hs5om-bharathans-projects-30f45a85.vercel.app/)**
 
 ---
 
-## Getting Started
+## ✨ Key Features
 
-1. Clone the repo, install dependencies, and spin up the UI/backend (refer to `/docs/setup.md` if available).
-2. Upload or compose a profile to initiate Phase 1.
-3. Follow the guided workflow — progress in each phase unlocks richer recommendations.
-4. Share feedback, log successes, and iterate with the “Measure & Iterate” dashboard.
+### 1. 📄 AI Resume Screening
+- Upload PDF/DOCX resumes
+- AI extracts skills, experience, and qualifications
+- Get ATS compatibility score
+- Receive improvement suggestions
 
-Need contributions? Open a PR, test AI pipelines, or help expand job-matching data sources.
+### 2. 🎯 Smart Skill Gap Analysis
+- Compare your skills against target roles
+- Visual skill comparison charts
+- Identify critical missing skills
+- Priority-based skill recommendations
+
+### 3. 📅 30-Day Personalized Roadmap
+- AI-generated learning plan
+- Grouped daily tasks (Day 1-7, Day 8-14, etc.)
+- Curated learning resources
+- Expandable day-by-day breakdown
+- Progress tracking checkpoints
+
+### 4. 📝 AI Resume Builder
+- Generate professional summaries
+- AI-powered content suggestions
+- Multiple resume templates
+- Export to PDF
+
+---
+
+## 🛠️ Technical Implementation
+
+### Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      FRONTEND (React)                       │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐  │
+│  │  Landing    │  │  Resume     │  │  Skill Gap          │  │
+│  │  Page       │  │  Screening  │  │  Analysis           │  │
+│  └─────────────┘  └─────────────┘  └─────────────────────┘  │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐  │
+│  │  Resume     │  │  30-Day     │  │  Dashboard          │  │
+│  │  Builder    │  │  Roadmap    │  │                     │  │
+│  └─────────────┘  └─────────────┘  └─────────────────────┘  │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    AI LAYER (OpenAI GPT-4)                  │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐  │
+│  │  Resume     │  │  Skill Gap  │  │  Roadmap            │  │
+│  │  Parser     │  │  Analyzer   │  │  Generator          │  │
+│  └─────────────┘  └─────────────┘  └─────────────────────┘  │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    BACKEND (Supabase)                       │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐  │
+│  │  User       │  │  Resumes    │  │  Roadmaps           │  │
+│  │  Profiles   │  │  Storage    │  │  Storage            │  │
+│  └─────────────┘  └─────────────┘  └─────────────────────┘  │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Tech Stack
+
+| Layer | Technology |
+|-------|------------|
+| **Frontend** | React 18, TypeScript, Vite |
+| **Styling** | Tailwind CSS, Shadcn/UI |
+| **Animations** | Framer Motion |
+| **AI/ML** | OpenAI GPT-4 API |
+| **Backend** | Supabase (PostgreSQL) |
+| **PDF Processing** | pdf-parse, pdfjs-dist |
+| **Deployment** | Vercel |
+
+### Key Integrations
+
+1. **OpenAI GPT-4**: Intelligent resume parsing, skill extraction, roadmap generation
+2. **Supabase**: User authentication, data storage, real-time updates
+3. **PDF.js**: Client-side PDF text extraction
+4. **Recharts**: Interactive skill comparison visualizations
+
+---
+
+## 🧠 Logic & System Reasoning
+
+### Resume Analysis Flow
+```
+User uploads resume → PDF text extraction → OpenAI parses content →
+Extract skills, experience, education → Store in database → Display results
+```
+
+### Skill Gap Detection Logic
+```
+1. Parse user's current skills from resume
+2. Fetch required skills for target role (AI-powered)
+3. Compare and calculate gap percentage
+4. Prioritize skills by importance
+5. Generate visual comparison
+```
+
+### 30-Day Roadmap Generation
+```
+1. Identify missing skills from gap analysis
+2. Categorize by complexity (complex: 7 days, medium: 4 days, basic: 3 days)
+3. Create daily learning tasks with resources
+4. Group similar consecutive days
+5. Add checkpoints and projects
+```
+
+### Edge Case Handling
+- **Empty resumes**: Graceful error messages
+- **Unsupported formats**: File type validation
+- **API failures**: Fallback to cached data
+- **Large files**: Size limit with user feedback
+
+---
+
+## 💡 Innovation & Idea Quality
+
+### Originality
+- **Multi-agent AI approach**: Different AI "agents" handle resume analysis, skill gap detection, and roadmap generation
+- **Smart day grouping**: Similar learning days are grouped (Day 1-7) with expandable details
+- **Realistic skill pacing**: Complex skills get more days, not just equal distribution
+
+### Practical Usefulness
+- Solves real job-seeker pain points
+- Actionable roadmaps with specific resources
+- ATS optimization suggestions
+- Progress tracking
+
+### Creativity
+- Animated, modern UI/UX
+- Typewriter text effects
+- Glass-morphism design
+- Interactive skill comparison charts
+
+---
+
+## 📁 Project Structure
+
+```
+Career-Navigator-fresh/
+├── src/
+│   ├── components/        # Reusable UI components
+│   │   ├── ui/           # Shadcn components
+│   │   ├── dashboard/    # Dashboard-specific components
+│   │   ├── Navbar.tsx
+│   │   └── DashboardNavbar.tsx
+│   ├── pages/            # Main pages
+│   │   ├── Index.tsx     # Landing page
+│   │   ├── Dashboard.tsx
+│   │   ├── ResumeScreening.tsx
+│   │   ├── ResumeBuilder.tsx
+│   │   ├── SkillGap.tsx
+│   │   └── Roadmap30Day.tsx
+│   ├── config/           # API configurations
+│   │   ├── apiKeys.ts
+│   │   └── openaiClient.ts
+│   ├── contexts/         # React contexts
+│   │   └── UserContext.tsx
+│   └── integrations/     # External service integrations
+│       └── supabase/
+├── public/
+├── .env                  # Environment variables
+├── package.json
+└── README.md
+```
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js 18+
+- npm or yarn
+- OpenAI API key
+
+### Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/iambharathan/career-prj.git
+
+# Navigate to project
+cd Career-Navigator-fresh
+
+# Install dependencies
+npm install
+
+# Create .env file
+echo "VITE_OPENAI_API_KEY=your_openai_api_key" > .env
+
+# Start development server
+npm run dev
+```
+
+### Environment Variables
+
+```env
+VITE_OPENAI_API_KEY=sk-...
+VITE_SUPABASE_URL=https://...
+VITE_SUPABASE_ANON_KEY=...
+```
+
+---
+
+## 👥 Team 7Byte
+
+| Role | Member |
+|------|--------|
+| **Team Number** | 27 |
+| **Problem Statement** | 1 |
+
+---
+
+## 📊 Judging Criteria Alignment
+
+### 1. Technical Implementation (10 Marks)
+- ✅ Working prototype deployed on Vercel
+- ✅ OpenAI GPT-4 integration for AI features
+- ✅ Supabase backend integration
+- ✅ Clean React/TypeScript architecture
+- ✅ PDF parsing and text extraction
+
+### 2. Logic & System Reasoning (5 Marks)
+- ✅ Clear multi-step workflow (Upload → Analyze → Gap → Roadmap)
+- ✅ Intelligent skill prioritization
+- ✅ Realistic learning day allocation
+- ✅ Edge case handling
+
+### 3. Innovation & Idea Quality (5 Marks)
+- ✅ Unique AI-agent based approach
+- ✅ Solves real job-seeker problems
+- ✅ Creative UI with animations
+- ✅ Practical 30-day roadmaps
+
+### 4. Presentation & Demo (5 Marks)
+- ✅ Live demo available
+- ✅ Clean, intuitive UI
+- ✅ Clear user flow
+
+---
+
+## 📜 License
+
+MIT License - Feel free to use and modify!
+
+---
+
+<p align="center">
+  <b>Built with ❤️ by Team 7Byte for TechX Vibeathon</b>
+</p>
